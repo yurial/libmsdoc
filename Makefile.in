@@ -1,0 +1,17 @@
+.PHONY: clean libmsdoc libmsdoc-php man
+all: @TARGETS@
+
+libmsdoc:
+	make -C src
+
+libmsdoc-php:
+	make -C php
+
+man:
+	make -C man
+
+clean:
+	make -C src clean
+	make -C php clean
+	make -C man clean
+

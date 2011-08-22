@@ -1,0 +1,22 @@
+AC_INIT
+AC_LANG_CPLUSPLUS
+AC_PROG_MAKE_SET
+AC_PROG_CXX
+
+AC_CHECK_PROG(PHPIZE,phpize,yes,no)
+AC_SUBST(PHPIZE)
+
+AC_CHECK_LIB(zip,zip_open,,AC_MSG_ERROR(libmsdoc require libzip))
+AC_CHECK_HEADERS(zip.h,,AC_MSG_ERROR(zip.h required))
+
+CFLAGS=
+AC_ARG_ENABLE(debug,AS_HELP_STRING(--enable-debug,enable debug),export CFLAGS="-g $CFLAGS")
+CXXFLAGS=$CFLAGS
+
+AC_ARG_ENABLE(libmsdoc,AS_HELP_STRING(--disable-libmsdoc,disable building libmsdoc),,export TARGETS="libmsdoc")
+AC_ARG_ENABLE(php,AS_HELP_STRING(--enable-php, enable building php extension),export TARGETS="$TARGETS libmsdoc-php")
+AC_ARG_ENABLE(man,AS_HELP_STRING(--enable-man,enable man pages),export TARGETS="$TARGETS man")
+AC_SUBST(TARGETS)
+
+AC_OUTPUT(Makefile src/Makefile php/Makefile man/Makefile) 
+
