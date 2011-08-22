@@ -1,0 +1,5 @@
+libmsdoc - C++ library to generate MS Office documents in a OpenXML format.
+libmsdoc-php - library extension for PHP
+
+    Yuri Dyachenko <libmsdoc@yurial.ru> (c) 2011
+
