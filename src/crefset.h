@@ -17,29 +17,59 @@ namespace libmsdoc
 {
     namespace internal
     {
+    template <class T>
     struct SRefObj
     {
-    public:
-    int     m_id;
+    protected:
     int     m_refs;
-            SRefObj():
-                m_id( 0 ), m_refs( 0 )
-            {
-            }
+    T*      m_container;
+
+    public:
+    typedef typename T::iterator iterator;
+    int     m_id;
+
+            SRefObj(T* container);
+    void    Link();
+    void    UnLink(iterator& it);
     };
 
     template <class T>
-    class CRefSet:
-        protected std::map<T,SRefObj>
+    SRefObj<T>::SRefObj(T* container):
+            m_id( 0 ), m_refs( 0 ), m_container( container )
     {
+    }
+
+    template <class T>
+    void SRefObj<T>::Link()
+    {
+    ++m_refs;
+    }
+
+    template <class T>
+    void SRefObj<T>::UnLink(iterator& it)
+    {
+    --m_refs;
+    if ( 0 == m_refs )
+        {
+        m_container->erase( it );
+        }
+    }
+
+    template <class T>
+    class CRefSet:
+        protected std::map<T, SRefObj< CRefSet< T > > >
+    {
+    public:
+    typedef CRefSet<T> self;
+
     protected:
-    typedef std::map<T,SRefObj> base;
+    typedef SRefObj<self> refobj;
+    typedef std::map<T,refobj> base;
     typedef typename base::iterator base_iterator;
     typedef typename base::const_iterator base_const_iterator;
 
     public:
-    typedef CRefSet<T> self;
-    typedef CRef<self,base_iterator> iterator;
+    typedef CRef<base_iterator> iterator;
     typedef iterator const_iterator;
 
     typedef T key_type;
@@ -74,7 +104,7 @@ namespace libmsdoc
     std::pair<iterator,iterator> equal_range(const T& obj) const;
 
     protected:
-    friend class CRef<self,base_iterator>;
+    friend class SRefObj<self>;
     void    erase(base_iterator& it);
     };
 
@@ -82,23 +112,24 @@ namespace libmsdoc
     typename CRefSet<T>::iterator CRefSet<T>::begin() const
     {
     const base* pbase = this;
-    return iterator( const_cast<self*>(this), const_cast<base*>( pbase )->begin() );
+    return iterator( const_cast<base*>( pbase )->begin() );
     }
 
     template <class T>
     typename CRefSet<T>::iterator CRefSet<T>::end() const
     {
     const base* pbase = this;
-    return iterator( const_cast<self*>(this), const_cast<base*>( pbase )->end() ); 
+    return iterator( const_cast<base*>( pbase )->end() ); 
     }
 
     template <class T>
     typename CRefSet<T>::iterator CRefSet<T>::insert(const T& obj)
     {
-    std::pair<base_iterator,bool> result = base::insert( std::make_pair( obj, SRefObj() ) );
+    std::pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
     base_iterator it = result.first;
     if ( result.second ) //new element
         {   
+        it->second.m_id = distance( base::begin(), it );
         base_iterator pos = it;
         base_iterator endpos = base::end();
         while( ++pos != endpos )
@@ -106,7 +137,7 @@ namespace libmsdoc
             ++(pos->second.m_id);
             }   
         }   
-    return iterator( this, it );
+    return iterator( it );
     }
 
     template <class T>

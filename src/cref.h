@@ -5,21 +5,17 @@ namespace libmsdoc
 {
     namespace internal
     {
-    template <class C, class base>
+    template <class base>
     class CRef:
         public base
     {
     protected:
-    friend class C::self;
-    C*      m_container;
-
-            CRef(C* container, const base& it);
-    bool    IsSet() const;
-    void    Link();
-    void    UnLink();
-    int     id() const;
+    void        Link();
+    void        UnLink();
 
     public:
+    typedef CRef<base>                              self;
+
     typedef typename base::value_type::first_type   value_type;
     typedef typename base::difference_type          difference_type;
     typedef typename base::iterator_category        iterator_category;
@@ -28,10 +24,13 @@ namespace libmsdoc
     typedef const value_type&                       reference;
     typedef reference                               const_reference;
 
-    typedef     CRef<C,base> self;
                 CRef();
+                CRef(const base& it);
                 CRef(const self& origin);
                 ~CRef();
+
+    bool        empty() const;
+    int         id() const;
 
     pointer     operator -> () const;
     reference   operator *  () const;
@@ -42,82 +41,78 @@ namespace libmsdoc
     self&       operator -- ();
 
     self&       operator =  (const self& rvalue);
+    bool        operator == (const self& rvalue) const;
     };
 
-    template <class C, class base>
-    CRef<C,base>::CRef():
-        m_container( NULL )
+    template <class base>
+    CRef<base>::CRef()
     {
     }
 
-    template <class C, class base>
-    CRef<C,base>::CRef(C* container, const base& it):
-        base( it ), m_container( container )
+    template <class base>
+    CRef<base>::CRef(const base& it):
+        base( it )
     {
     Link();
     }
     
-    template <class C, class base>
-    CRef<C,base>::CRef(const self& origin):
-        base( origin ), m_container( origin.m_container )
+    template <class base>
+    CRef<base>::CRef(const self& origin):
+        base( origin )
     {
     Link();
     }
 
-    template <class C, class base>
-    CRef<C,base>::~CRef()
+    template <class base>
+    CRef<base>::~CRef()
     {
     UnLink();
     }
 
-    template <class C, class base>
-    bool CRef<C,base>::IsSet() const
+    template <class base>
+    bool CRef<base>::empty() const
     {
-    return NULL != base::_M_node;
+    return (NULL == base::_M_node) || (NULL == base::_M_node->_M_parent) || (base::_M_node != base::_M_node->_M_parent->_M_right && base::_M_node != base::_M_node->_M_parent->_M_left);
     }
 
-    template <class C, class base>
-    void CRef<C,base>::Link()
+    template <class base>
+    void CRef<base>::Link()
     {
-    if ( IsSet() )
+    if ( !empty() )
         {
-        ++(base::operator ->()->second.m_refs);
+        base::operator ->()->second.Link();
         }
     }
 
-    template <class C, class base>
-    void CRef<C,base>::UnLink()
+    template <class base>
+    void CRef<base>::UnLink()
     {
-    if ( IsSet() )
+    if ( !empty() )
         {
-        int refs = --(base::operator ->()->second.m_refs);
-        if ( 0 == refs )
-            {
-            m_container->erase( *this );
-            }
+        base::operator ->()->second.UnLink( *this );
         }
     }
 
-    template <class C, class base>
-    int CRef<C,base>::id() const
+    template <class base>
+    int CRef<base>::id() const
     {
     return base::operator -> () ->second.m_id;
     }
 
-    template <class C, class base>
-    typename CRef<C,base>::pointer CRef<C,base>::operator -> () const
+    template <class base>
+    typename CRef<base>::pointer CRef<base>::operator -> () const
     {
     return &base::operator -> ()->first;
     }
 
-    template <class C, class base>
-    typename CRef<C,base>::reference CRef<C,base>::operator * () const
+    template <class base>
+    typename CRef<base>::reference CRef<base>::operator * () const
     {
     return base::operator -> ()->first;
     }
 
-    template <class C, class base>
-    CRef<C,base> CRef<C,base>::operator ++ (int)
+    template <class base>
+    CRef<base> CRef<base>::operator ++ (int)
     {
     self result( *this );
     UnLink();
@@ -126,8 +121,8 @@ namespace libmsdoc
     return result;
     }
 
-    template <class C, class base>
-    CRef<C,base> CRef<C,base>::operator -- (int)
+    template <class base>
+    CRef<base> CRef<base>::operator -- (int)
     {
     self result( *this );
     UnLink();
@@ -136,8 +131,8 @@ namespace libmsdoc
     return result;
     }
 
-    template <class C, class base>
-    CRef<C,base>& CRef<C,base>::operator ++ ()
+    template <class base>
+    CRef<base>& CRef<base>::operator ++ ()
     {
     base next = *this;
     ++next;
@@ -147,8 +142,8 @@ namespace libmsdoc
     return *this;
     }
 
-    template <class C, class base>
-    CRef<C,base>& CRef<C,base>::operator -- ()
+    template <class base>
+    CRef<base>& CRef<base>::operator -- ()
     {
     base previous = *this;
     --previous;
@@ -158,14 +153,20 @@ namespace libmsdoc
     return *this;
     }
 
-    template <class C, class base>
-    CRef<C,base>& CRef<C,base>::operator =  (const CRef<C,base>& rvalue)
+    template <class base>
+    CRef<base>& CRef<base>::operator =  (const CRef<base>& rvalue)
     {
     rvalue.Link();
     UnLink();
     base::operator = ( rvalue );
-    m_container = rvalue.m_container;
     return *this;
+    }
+
+    template <class base>
+    bool CRef<base>::operator == (const self& rvalue) const
+    {
+    bool allempty = empty() && rvalue.empty();
+    return allempty || base::operator == ( rvalue );
     }
 
     }
