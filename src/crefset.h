@@ -7,7 +7,7 @@ namespace libmsdoc
 {
     namespace internal
     {
-    template <class T> class CRefSet;
+    template < class Key, class Compare = std::less<Key>, class Allocator = std::allocator<Key> > class CRefSet;
     }
 }
 
@@ -55,36 +55,33 @@ namespace libmsdoc
         }
     }
 
-    template <class T>
+    template <class Key, class Compare, class Allocator>
     class CRefSet:
-        protected std::map<T, SRefObj< CRefSet< T > > >
+        protected std::map<Key, SRefObj< CRefSet< Key > >, Compare, Allocator>
     {
     public:
-    typedef CRefSet<T> self;
+    typedef CRefSet<Key,Compare,Allocator>          self;
 
     protected:
-    typedef SRefObj<self> refobj;
-    typedef std::map<T,refobj> base;
-    typedef typename base::iterator base_iterator;
-    typedef typename base::const_iterator base_const_iterator;
+    typedef SRefObj<self>                           refobj;
+    typedef std::map<Key,refobj,Compare,Allocator>  base;
+    typedef typename base::iterator                 base_iterator;
+    typedef typename base::const_iterator           base_const_iterator;
 
     public:
-    typedef CRef<base_iterator> iterator;
-    typedef iterator const_iterator;
-
-    typedef T key_type;
-    typedef T value_type;
-    typedef typename base::key_compare key_compare;
-    typedef typename base::key_compare value_compare;
-    typedef typename base::allocator_type allocator_type;
-    typedef typename iterator::reference reference;
-    typedef typename iterator::const_reference const_reference;
-    typedef typename base::size_type size_type;
-    typedef typename iterator::difference_type difference_type;
-    typedef typename iterator::pointer pointer;
-    typedef typename iterator::const_pointer const_pointer;
-    typedef typename std::reverse_iterator<iterator> reverse_iterator;
-    typedef typename std::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef Key                                     key_type;
+    typedef Key                                     value_type;
+    typedef typename base::key_compare              key_compare;
+    typedef typename base::key_compare              value_compare;
+    typedef typename base::allocator_type           allocator_type;
+    typedef CRef<base_iterator>                     iterator;
+    typedef iterator                                const_iterator;
+    typedef typename iterator::reference            reference;
+    typedef typename iterator::const_reference      const_reference;
+    typedef typename iterator::pointer              pointer;
+    typedef typename iterator::const_pointer        const_pointer;
+    typedef typename base::size_type                size_type;
+    typedef typename iterator::difference_type      difference_type;
 
     using base::key_comp;
     using base::value_comp;
@@ -95,35 +92,35 @@ namespace libmsdoc
     using base::clear;
     using base::count;
 
-    iterator    begin() const;
-    iterator    end() const;
-    iterator    insert(const T& obj);
-    iterator    find(const T& obj) const;
-    iterator    lower_bound(const T& obj) const;
-    iterator    upper_bound(const T& obj) const;
-    std::pair<iterator,iterator> equal_range(const T& obj) const;
+    iterator            begin() const;
+    iterator            end() const;
+    iterator            insert(const Key& obj);
+    iterator            find(const Key& obj) const;
+    iterator            lower_bound(const Key& obj) const;
+    iterator            upper_bound(const Key& obj) const;
+    std::pair<iterator,iterator> equal_range(const Key& obj) const;
 
     protected:
     friend class SRefObj<self>;
-    void    erase(base_iterator& it);
+    void                erase(base_iterator& it);
     };
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::begin() const
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::begin() const
     {
     const base* pbase = this;
     return iterator( const_cast<base*>( pbase )->begin() );
     }
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::end() const
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::end() const
     {
     const base* pbase = this;
     return iterator( const_cast<base*>( pbase )->end() ); 
     }
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::insert(const T& obj)
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::insert(const Key& obj)
     {
     std::pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
     base_iterator it = result.first;
@@ -140,8 +137,8 @@ namespace libmsdoc
     return iterator( it );
     }
 
-    template <class T>
-    void CRefSet<T>::erase(base_iterator& it)
+    template <class Key, class Compare, class Allocator>
+    void CRefSet<Key,Compare,Allocator>::erase(base_iterator& it)
     {
     if ( base::begin() == it )
         {   
@@ -156,29 +153,29 @@ namespace libmsdoc
     base::erase( it );
     }
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::find(const T& obj) const
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::find(const Key& obj) const
     {
     const base* pbase = this;
     return iterator( const_cast<self*>(this), const_cast<base*>(pbase)->find( obj ) );
     }
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::lower_bound(const T& obj) const
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::lower_bound(const Key& obj) const
     {
     const base* pbase = this;
     return iterator( const_cast<self*>(this), const_cast<base*>(pbase)->lower_bound( obj ) );
     }
 
-    template <class T>
-    typename CRefSet<T>::iterator CRefSet<T>::upper_bound(const T& obj) const
+    template <class Key, class Compare, class Allocator>
+    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::upper_bound(const Key& obj) const
     {
     const base* pbase = this;
     return iterator( const_cast<self*>(this), const_cast<base*>(pbase)->upper_bound( obj ) );
     }
 
-    template <class T>
-    std::pair<typename CRefSet<T>::iterator, typename CRefSet<T>::iterator> CRefSet<T>::equal_range(const T& obj) const
+    template <class Key, class Compare, class Allocator>
+    std::pair<typename CRefSet<Key,Compare,Allocator>::iterator, typename CRefSet<Key,Compare,Allocator>::iterator> CRefSet<Key,Compare,Allocator>::equal_range(const Key& obj) const
     {
     self* pthis = const_cast<self*>( this );
     const base* pbase = this;
