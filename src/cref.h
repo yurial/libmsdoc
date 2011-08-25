@@ -81,7 +81,7 @@ namespace libmsdoc
 
     int CRef::id() const
     {
-    return m_refobj->GetId();
+    return ( empty() )? -1 : m_refobj->GetId();
     }
 
     CRef& CRef::operator =  (const CRef& rvalue)

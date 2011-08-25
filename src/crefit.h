@@ -91,7 +91,13 @@ namespace libmsdoc
     template <class base>
     bool CRefIterator<base>::empty() const
     {
-    return (NULL == base::_M_node) || (NULL == base::_M_node->_M_parent) || (base::_M_node != base::_M_node->_M_parent->_M_right && base::_M_node != base::_M_node->_M_parent->_M_left);
+    bool node = (NULL != base::_M_node);
+    bool parent = node && (NULL != base::_M_node->_M_parent);
+    bool left = node && (NULL != base::_M_node->_M_left);
+    bool right = node && (NULL != base::_M_node->_M_right);
+    bool parent_pointed = parent && (base::_M_node == base::_M_node->_M_parent->_M_left || base::_M_node == base::_M_node->_M_parent->_M_right);
+    bool childs_pointed = (left && base::_M_node == base::_M_node->_M_left->_M_parent) || (right && base::_M_node == base::_M_node->_M_right->_M_parent);
+    return !node || !parent || !(parent_pointed || childs_pointed);
     }
 
     template <class base>
@@ -121,7 +127,7 @@ namespace libmsdoc
     template <class base>
     int CRefIterator<base>::id() const
     {
-    return base::operator -> () ->second.GetId();
+    return ( empty() )? -1 : (base::operator -> () ->second.GetId());
     }
 
     template <class base>
