@@ -11,59 +11,26 @@ namespace libmsdoc
     }
 }
 
+#include "irefcontainer.h"
 #include "cref.h"
+#include "crefit.h"
 
 namespace libmsdoc
 {
     namespace internal
     {
-    template <class T>
-    struct SRefObj
-    {
-    protected:
-    int     m_refs;
-    T*      m_container;
-
-    public:
-    typedef typename T::iterator iterator;
-    int     m_id;
-
-            SRefObj(T* container);
-    void    Link();
-    void    UnLink(iterator& it);
-    };
-
-    template <class T>
-    SRefObj<T>::SRefObj(T* container):
-            m_id( 0 ), m_refs( 0 ), m_container( container )
-    {
-    }
-
-    template <class T>
-    void SRefObj<T>::Link()
-    {
-    ++m_refs;
-    }
-
-    template <class T>
-    void SRefObj<T>::UnLink(iterator& it)
-    {
-    --m_refs;
-    if ( 0 == m_refs )
-        {
-        m_container->erase( it );
-        }
-    }
 
     template <class Key, class Compare, class Allocator>
     class CRefSet:
-        protected std::map<Key, SRefObj< CRefSet< Key > >, Compare, Allocator>
+        protected IRefContainer,
+        protected std::map<Key, CRefObj< CRefSet< Key, Compare, Allocator > >, Compare, Allocator>
     {
     public:
+    using std::pair;
     typedef CRefSet<Key,Compare,Allocator>          self;
 
     protected:
-    typedef SRefObj<self>                           refobj;
+    typedef CRefObj<self>                           refobj;
     typedef std::map<Key,refobj,Compare,Allocator>  base;
     typedef typename base::iterator                 base_iterator;
     typedef typename base::const_iterator           base_const_iterator;
@@ -74,7 +41,8 @@ namespace libmsdoc
     typedef typename base::key_compare              key_compare;
     typedef typename base::key_compare              value_compare;
     typedef typename base::allocator_type           allocator_type;
-    typedef CRef<base_iterator>                     iterator;
+    typedef CRef                                    ref;
+    typedef CRefIterator<base_iterator>             iterator;
     typedef iterator                                const_iterator;
     typedef typename iterator::reference            reference;
     typedef typename iterator::const_reference      const_reference;
@@ -94,15 +62,17 @@ namespace libmsdoc
 
     iterator            begin() const;
     iterator            end() const;
-    iterator            insert(const Key& obj);
+    pair<iterator,bool> insert(const Key& obj);
     iterator            find(const Key& obj) const;
     iterator            lower_bound(const Key& obj) const;
     iterator            upper_bound(const Key& obj) const;
     std::pair<iterator,iterator> equal_range(const Key& obj) const;
 
     protected:
-    friend class SRefObj<self>;
+    friend class CRefObj<self>;
+
     void                erase(base_iterator& it);
+    void                erase(int id);
     };
 
     template <class Key, class Compare, class Allocator>
@@ -120,21 +90,21 @@ namespace libmsdoc
     }
 
     template <class Key, class Compare, class Allocator>
-    typename CRefSet<Key,Compare,Allocator>::iterator CRefSet<Key,Compare,Allocator>::insert(const Key& obj)
+    typename std::pair<CRefSet<Key,Compare,Allocator>::iterator,bool> CRefSet<Key,Compare,Allocator>::insert(const Key& obj)
     {
-    std::pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
+    pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
     base_iterator it = result.first;
     if ( result.second ) //new element
         {   
-        it->second.m_id = distance( base::begin(), it );
+        it->second.SetId( distance( base::begin(), it ) );
         base_iterator pos = it;
         base_iterator endpos = base::end();
         while( ++pos != endpos )
             {   
-            ++(pos->second.m_id);
+            pos->second.IncId();
             }   
         }   
-    return iterator( it );
+    return pair<iterator,bool>( it, result.second );
     }
 
     template <class Key, class Compare, class Allocator>
@@ -148,9 +118,17 @@ namespace libmsdoc
     base_iterator endpos = base::end();
     while ( ++pos != endpos )
         {
-        --(pos->second.m_id);
+        pos->second.DecId();
         }
     base::erase( it );
+    }
+
+    template <class Key, class Compare, class Allocator>
+    void CRefSet<Key,Compare,Allocator>::erase(int id)
+    {
+    base_iterator it = base::begin();
+    advance( it, id );
+    erase( it );
     }
 
     template <class Key, class Compare, class Allocator>
