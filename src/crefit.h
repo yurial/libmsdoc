@@ -7,6 +7,8 @@ namespace libmsdoc
 {
     namespace internal
     {
+    using std::pair;
+
     template <class base>
     class CRefIterator:
         public base
@@ -36,6 +38,7 @@ namespace libmsdoc
                 CRefIterator();
                 CRefIterator(const base& it);
                 CRefIterator(const self& origin);
+                CRefIterator(const pair<self,bool>& p);
                 ~CRefIterator();
 
     bool        empty() const;
@@ -68,6 +71,13 @@ namespace libmsdoc
     template <class base>
     CRefIterator<base>::CRefIterator(const self& origin):
         base( origin )
+    {
+    Link();
+    }
+
+    template <class base>
+    CRefIterator<base>::CRefIterator(const pair<self,bool>& p):
+        base( p.first )
     {
     Link();
     }

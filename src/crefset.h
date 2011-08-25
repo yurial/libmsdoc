@@ -19,6 +19,7 @@ namespace libmsdoc
 {
     namespace internal
     {
+    using std::pair;
 
     template <class Key, class Compare, class Allocator>
     class CRefSet:
@@ -26,7 +27,6 @@ namespace libmsdoc
         protected std::map<Key, CRefObj< CRefSet< Key, Compare, Allocator > >, Compare, Allocator>
     {
     public:
-    using std::pair;
     typedef CRefSet<Key,Compare,Allocator>          self;
 
     protected:
@@ -66,7 +66,7 @@ namespace libmsdoc
     iterator            find(const Key& obj) const;
     iterator            lower_bound(const Key& obj) const;
     iterator            upper_bound(const Key& obj) const;
-    std::pair<iterator,iterator> equal_range(const Key& obj) const;
+    pair<iterator,iterator> equal_range(const Key& obj) const;
 
     protected:
     friend class CRefObj<self>;
@@ -90,9 +90,9 @@ namespace libmsdoc
     }
 
     template <class Key, class Compare, class Allocator>
-    typename std::pair<CRefSet<Key,Compare,Allocator>::iterator,bool> CRefSet<Key,Compare,Allocator>::insert(const Key& obj)
+    pair<typename CRefSet<Key,Compare,Allocator>::iterator,bool> CRefSet<Key,Compare,Allocator>::insert(const Key& obj)
     {
-    pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
+    std::pair<base_iterator,bool> result = base::insert( std::make_pair( obj, refobj( this ) ) );
     base_iterator it = result.first;
     if ( result.second ) //new element
         {   
@@ -153,11 +153,11 @@ namespace libmsdoc
     }
 
     template <class Key, class Compare, class Allocator>
-    std::pair<typename CRefSet<Key,Compare,Allocator>::iterator, typename CRefSet<Key,Compare,Allocator>::iterator> CRefSet<Key,Compare,Allocator>::equal_range(const Key& obj) const
+    pair<typename CRefSet<Key,Compare,Allocator>::iterator, typename CRefSet<Key,Compare,Allocator>::iterator> CRefSet<Key,Compare,Allocator>::equal_range(const Key& obj) const
     {
     self* pthis = const_cast<self*>( this );
     const base* pbase = this;
-    std::pair<base_iterator,base_iterator> result = const_cast<base*>( pbase )->equal_range( obj );
+    pair<base_iterator,base_iterator> result = const_cast<base*>( pbase )->equal_range( obj );
     return std::make_pair( iterator( pthis, result.first ), iterator( pthis, result.second ) );
     }
 
