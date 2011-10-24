@@ -6,7 +6,7 @@
 namespace spreadsheetml
 {
 
-struct CT_workbook    //$18.2.27 (Workbook)
+struct CT_Workbook    //$18.2.27 (Workbook)
 {
 //attr
 //TODO:ST_ConformanceClass         conformance;               //$22.9.2.2 (Document Conformance Class)
