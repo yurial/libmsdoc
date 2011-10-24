@@ -1,0 +1,15 @@
+.PHONY: distclean clean libmsdoc
+
+CXXFLAGS=
+SRC=$(wildcard *.cpp)
+OBJ=$(SRC:%.cpp=%.o)
+
+all: libmsdoc
+libmsdoc: libmsdoc.so
+libmsdoc.so: $(OBJ)
+
+distclean: clean
+	rm Makefile
+
+clean:
+
