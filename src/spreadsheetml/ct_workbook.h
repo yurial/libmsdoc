@@ -8,9 +8,9 @@ namespace spreadsheetml
 
 struct CT_Workbook    //$18.2.27 (Workbook)
 {
-//attr
+//attrs
 //TODO:ST_ConformanceClass         conformance;               //$22.9.2.2 (Document Conformance Class)
-//child
+//childs
 //TODO:CT_BookViews                bookViews;                 //$18.2.1  (Workbook Views)
 //TODO:CT_CalcPr                   calcPr;                    //$18.2.2  (Calculation Properties)
 //TODO:CT_CustomWorkbookViews      customWorkbookViews;       //$18.2.4  (Custom Workbook Views)
