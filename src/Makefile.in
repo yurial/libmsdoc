@@ -1,6 +1,6 @@
 .PHONY: all test distclean clean libmsdoc
 
-VPATH+=test:ext:excel
+VPATH+=test:ext:ext/ref:excel
 INCLUDE+=-I.
 
 LDFLAGS+=-lzip
@@ -9,15 +9,18 @@ CXXFLAGS=${INCLUDE} @CXXFLAGS@
 SRC=$(wildcard *.cpp)
 OBJ=$(SRC:%.cpp=%.o)
 
-EXT_SRC=$(wildcard ext/*.cpp)
+EXT_SRC=$(wildcard ext/*.cpp) $(wildcard ext/ref/*.cpp)
 EXT_OBJ=$(EXT_SRC:%.cpp=%.o)
 
 EXCEL_SRC=$(wildcard excel/*.cpp)
 EXCEL_OBJ=$(EXCEL_SRC:%.cpp=%.o)
 
+BUILD=libmsdoc test_refset test_excel
+
 all: libmsdoc
-test: test_excel
+test: test_refset test_excel
 test_excel: $(EXCEL_OBJ) $(EXT_OBJ)
+test_refset: $(EXT_OBJ)
 libmsdoc: libmsdoc.so
 libmsdoc.so: $(OBJ)
 
@@ -25,4 +28,5 @@ distclean: clean
 	rm Makefile
 
 clean:
+	rm -f $(BUILD) $(OBJ) $(EXCEL_OBJ) $(EXT_OBJ)
 

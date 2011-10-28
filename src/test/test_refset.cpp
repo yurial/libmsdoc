@@ -2,7 +2,7 @@
 using std::cout;
 using std::endl;
 
-#include "ext/refset.h"
+#include "ext/ref/set.h"
 
 using namespace ext;
 

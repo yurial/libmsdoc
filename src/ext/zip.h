@@ -1,13 +1,13 @@
 #ifndef EXT_ZIPH
 #define EXT_ZIPH
 
+#include "exception.h"
+#include "string.h"
+
 namespace libzip
 {
 #include <zip.h>
 }
-
-#include "exception.h"
-#include "string.h"
 
 namespace ext
 {

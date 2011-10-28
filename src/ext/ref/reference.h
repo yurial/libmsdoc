@@ -1,7 +1,16 @@
-#ifndef EXT_REFH
-#define EXT_REFH
+#ifndef EXT_REF_REFERENCEH
+#define EXT_REF_REFERENCEH
 
-#include "refit.h"
+namespace ext
+{
+namespace ref
+{
+class reference;
+}//namespace ref
+}//namespace ext
+
+#include "iterator.h"
+#include "refobj.h"
 
 namespace ext
 {
@@ -11,9 +20,9 @@ namespace ref
 class reference
 {
 protected:
-baseobj*        m_refobj;
-void            link();
-void            unlink();
+baseobj*            m_refobj;
+void                link();
+void                unlink();
 
 public:
 typedef reference   self;
