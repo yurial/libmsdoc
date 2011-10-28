@@ -1,10 +1,23 @@
-.PHONY: distclean clean libmsdoc
+.PHONY: all test distclean clean libmsdoc
 
-CXXFLAGS=@CXXFLAGS@
+VPATH+=test:ext:excel
+INCLUDE+=-I.
+
+LDFLAGS+=-lzip
+CXXFLAGS=${INCLUDE} @CXXFLAGS@
+
 SRC=$(wildcard *.cpp)
 OBJ=$(SRC:%.cpp=%.o)
 
+EXT_SRC=$(wildcard ext/*.cpp)
+EXT_OBJ=$(EXT_SRC:%.cpp=%.o)
+
+EXCEL_SRC=$(wildcard excel/*.cpp)
+EXCEL_OBJ=$(EXCEL_SRC:%.cpp=%.o)
+
 all: libmsdoc
+test: test_excel
+test_excel: $(EXCEL_OBJ) $(EXT_OBJ)
 libmsdoc: libmsdoc.so
 libmsdoc.so: $(OBJ)
 
